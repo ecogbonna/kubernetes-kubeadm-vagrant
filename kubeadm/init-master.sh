@@ -4,11 +4,7 @@ echo ">>> INIT MASTER NODE"
 
 sudo systemctl enable kubelet
 
-kubeadm init \
-  --apiserver-advertise-address=$MASTER_NODE_IP \
-  --pod-network-cidr=$K8S_POD_NETWORK_CIDR \
-  --ignore-preflight-errors=NumCPU \
-  --v=5
+
 sudo kubeadm init \
   --pod-network-cidr=$K8S_POD_NETWORK_CIDR \
   --service-cidr=$K8S_SERVICE_CIDR \
