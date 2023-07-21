@@ -1,7 +1,6 @@
 #!/bin/bash
 
-POD_CIDR=172.16.0.0/16
-# Kubeadm default is 6443
+POD_CIDR=10.40.0.0/16
 MASKSIZE=24
 
 
@@ -29,4 +28,6 @@ sudo /usr/local/bin/helm install cilium cilium/cilium \
 curl -LO https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/high-availability.yaml
 sudo sed -i 's/policy\/v1beta1/policy\/v1/g' high-availability.yaml
 
-/usr/local/bin/kubectl apply -f high-availability.yaml
+/usr/bin/kubectl apply -f high-availability.yaml
+
+echo ">>> REMEMBER TO SETUP KUBELET CSR"

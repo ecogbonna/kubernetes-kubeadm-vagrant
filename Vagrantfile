@@ -1,9 +1,9 @@
 domain = "kubernetes.lab"
-control_plane_endpoint = "master." + domain + ":6443"
+control_plane_endpoint = "cilium-master"
 pod_network_cidr = "10.40.0.0/16"
 service_cidr= "10.64.0.0/20"
 pod_network_type = "cilium" # choose between cilium and calico
-master_node_ip = "192.168.57.100"
+master_node_ip = "192.168.58.100"
 version = "1.26.1"
 
 Vagrant.configure("2") do |config|
@@ -15,14 +15,14 @@ Vagrant.configure("2") do |config|
     config.vm.provision :shell, path: "kubeadm/bootstrap.sh", env: { "VERSION" => version }
     config.vm.define "master", primary: true do |master|
       master.vm.box = "oraclebase/oracle-9"
-      master.vm.hostname = "master.#{domain}"
-      master.vm.network "private_network", ip: "#{master_node_ip}"
+      master.vm.hostname = "cilium-master.#{domain}"
+      master.vm.network "public_network", ip: "#{master_node_ip}"
       master.vm.provision "shell", env: {"DOMAIN" => domain, "MASTER_NODE_IP" => master_node_ip} ,inline: <<-SHELL 
-      echo "$MASTER_NODE_IP master.$DOMAIN master" >> /etc/hosts 
+      echo "$MASTER_NODE_IP cilium-master.$DOMAIN cilium-master" >> /etc/hosts 
       SHELL
       (1..2).each do |nodeIndex|
         master.vm.provision "shell", env: {"DOMAIN" => domain, "NODE_INDEX" => nodeIndex}, inline: <<-SHELL 
-        echo "192.168.57.10$NODE_INDEX worker-$NODE_INDEX.$DOMAIN worker-$NODE_INDEX" >> /etc/hosts 
+        echo "192.168.58.10$NODE_INDEX cilium-worker-$NODE_INDEX.$DOMAIN cilium-worker-$NODE_INDEX" >> /etc/hosts 
         SHELL
       end
       master.vm.provision "shell", path:"kubeadm/init-master.sh", env: {"K8S_CONTROL_PLANE_ENDPOINT" => control_plane_endpoint, "K8S_POD_NETWORK_CIDR" => pod_network_cidr, "K8S_SERVICE_CIDR" => service_cidr, "K8S_POD_NETWORK_TYPE" => pod_network_type, "MASTER_NODE_IP" => master_node_ip}
@@ -30,20 +30,20 @@ Vagrant.configure("2") do |config|
     (1..2).each do |nodeIndex|
       config.vm.define "worker-#{nodeIndex}" do |worker|
         worker.vm.box = "oraclebase/oracle-9"
-        worker.vm.hostname = "worker-#{nodeIndex}.#{domain}"
-        worker.vm.network "private_network", ip: "192.168.57.10#{nodeIndex}"
+        worker.vm.hostname = "cilium-worker-#{nodeIndex}.#{domain}"
+        worker.vm.network "public_network", ip: "192.168.58.10#{nodeIndex}"
         worker.vm.provision "shell", env: {"DOMAIN" => domain, "MASTER_NODE_IP" => master_node_ip} ,inline: <<-SHELL 
-        echo "$MASTER_NODE_IP master.$DOMAIN master" >> /etc/hosts 
+        echo "$MASTER_NODE_IP cilium-master.$DOMAIN cilium-master" >> /etc/hosts 
         SHELL
         (1..2).each do |hostIndex|
             worker.vm.provision "shell", env: {"DOMAIN" => domain, "NODE_INDEX" => hostIndex}, inline: <<-SHELL 
-            echo "192.168.57.10$NODE_INDEX worker-$NODE_INDEX.$DOMAIN worker-$NODE_INDEX" >> /etc/hosts 
+            echo "192.168.58.10$NODE_INDEX cilium-worker-$NODE_INDEX.$DOMAIN cilium-worker-$NODE_INDEX" >> /etc/hosts 
             SHELL
         end
         worker.vm.provision "shell", path:"kubeadm/init-worker.sh"
         worker.vm.provision "shell", env: {"NODE_INDEX" => nodeIndex, "MASTER_NODE_IP" => master_node_ip}, inline: <<-SHELL 
             echo ">>> FIX KUBELET NODE IP"
-            echo "KUBELET_EXTRA_ARGS=--node-ip=$MASTER_NODE_IP" | sudo tee -a /var/lib/kubelet/kubeadm-flags.env
+            echo "KUBELET_EXTRA_ARGS=\"--node-ip=$MASTER_NODE_IP\"" | sudo tee -a /var/lib/kubelet/kubeadm-flags.env
             sudo systemctl daemon-reload
             sudo systemctl restart kubelet
             SHELL

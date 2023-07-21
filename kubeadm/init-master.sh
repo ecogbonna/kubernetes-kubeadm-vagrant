@@ -8,7 +8,7 @@ sudo systemctl enable kubelet
 sudo kubeadm init \
   --pod-network-cidr=$K8S_POD_NETWORK_CIDR \
   --service-cidr=$K8S_SERVICE_CIDR \
-  --control-plane-endpoint=k8s-master \
+  --control-plane-endpoint=$K8S_CONTROL_PLANE_ENDPOINT \
   --apiserver-advertise-address=$MASTER_NODE_IP \
   --v=5
 
