@@ -30,4 +30,4 @@ sudo sed -i 's/policy\/v1beta1/policy\/v1/g' high-availability.yaml
 
 /usr/bin/kubectl apply -f high-availability.yaml
 
-echo ">>> REMEMBER TO SETUP KUBELET CSR"
+echo ">>> REMEMBER TO SETUP KUBELET CSR FOR METRICS SERVER"

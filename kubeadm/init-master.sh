@@ -19,6 +19,10 @@ sudo mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
+sudo mkdir -p /home/vagrant/.kube
+sudo cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
+sudo chown $(id vagrant -u):$(id vagrant -g) $HOME/.kube/config
+
 
 echo ">>> FIX KUBELET NODE IP"
 
@@ -28,6 +32,7 @@ echo "KUBELET_EXTRA_ARGS=\"--node-ip=$MASTER_NODE_IP\"" | sudo tee -a /var/lib/k
 if [ "$K8S_POD_NETWORK_TYPE" == "cilium" ]
 then 
   echo ">>> DEPLOY POD NETWORK > CILIUM"
+  sed -i -e 's/\r$//' /vagrant/cni/cilium/scripts/cilium.sh
   /vagrant/cni/cilium/scripts/cilium.sh 
 fi
 

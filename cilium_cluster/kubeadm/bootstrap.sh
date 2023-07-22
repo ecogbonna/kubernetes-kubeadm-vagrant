@@ -90,8 +90,7 @@ sudo dnf install -y kubelet-$VERSION kubeadm-$VERSION kubectl-$VERSION --disable
 systemctl enable --now kubelet && systemctl start kubelet
 
 
-echo ">>> PREPARE ENVIRONMENT"
-echo "alias k=kubectl" >> ~/.bash_profile
-echo "source <(kubectl completion bash)" >> ~/.bash_profile
-echo "source <(kubectl completion bash | sed s/kubectl/k/g)" >> ~/.bash_profile
-. .bash_profile
+echo ">>> PREPARE ENVIRONMENT FOR VAGRANT USER"
+echo "alias k=kubectl" >> /home/vagrant/.bash_profile
+echo "source <(kubectl completion bash)" >> /home/vagrant/.bash_profile
+echo "source <(kubectl completion bash | sed s/kubectl/k/g)" >> /home/vagrant/.bash_profile
